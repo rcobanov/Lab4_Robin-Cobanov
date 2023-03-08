@@ -27,31 +27,31 @@ async function createDefaultUsers(username, name, role, password) {
 }
 
 //Middleware 
-
-
-
-//Routes
-
-app.get('/', (req, res) => {
-  res.redirect('/identify')
-})
-
-app.get('/identify', (req, res) => {
-
-  //get token from cookie
+function authorizeToken(req, res, next) {
   const token = req.cookies.jwt;
 
   if (!token) {
-    return res.render('identify.ejs')
+    return res.redirect('/identify')
   }
 
   try {
     const data = jwt.verify(token, process.env.TOKENKEY)
-    res.render('start.ejs')
+    res.redirect('/granted')
   } catch {
-    return res.status(403).render('identify.ejs')
+    return res.status(403).redirect('/identify')
   }
   console.log(req.cookies.jwt)
+}
+
+//Routes
+
+app.get('/', authorizeToken, (req, res) => {
+  res.redirect('/identify')
+})
+
+
+app.get('/identify',(req, res) => {
+ res.render('identify.ejs')
 })
 
 
@@ -78,7 +78,6 @@ app.post('/identify', async (req, res) => {
       //passwords match
       let userObj = { username: req.body.username };
       const token = jwt.sign(userObj, process.env.TOKENKEY)
-      console.log(token);
       //send to user and render startpage
       return res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
     } else {
@@ -89,6 +88,10 @@ app.post('/identify', async (req, res) => {
   } catch(error){
     console.log(error);
   }
+})
+
+app.get('/granted', (req, res) => {
+  res.render('start.ejs')
 })
 
 
