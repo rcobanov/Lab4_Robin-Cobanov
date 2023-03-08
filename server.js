@@ -44,18 +44,25 @@ function authorizeToken(req, res, next) {
   }
 }
 
-function authorizeRole(req, res, next) {
+function authorizeRoleAdmin(req, res, next) {
+  console.log('i start')
   const token = req.cookies.jwt;
-  console.log("Role" + token)
-    if (!token) {
+  if (!token) {
+      console.log('no token')
       return res.status(401).redirect('/failed');
     }
-    try {
-      const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
-
-    } catch {
-      console.log("Error")
+  try {
+    const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
+    console.log(decryptedToken.role)
+    if (decryptedToken.role == 'ADMIN') {
+      console.log('Im here')
+      next();
+    } else {
+      res.sendStatus(401);
     }
+   } catch {
+    console.log("Error")
+  }
 }
 
 //Routes
@@ -109,7 +116,7 @@ app.get('/granted', (req, res) => {
   res.render('start.ejs')
 })
 
-app.get('/admin', authorizeRole, (req, res) => {
+app.get('/admin', authorizeRoleAdmin, (req, res) => {
   console.log(req.cookies.jwt)
   res.render('admin.ejs')
 })
