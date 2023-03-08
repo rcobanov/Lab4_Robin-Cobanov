@@ -20,11 +20,12 @@ createDefaultUsers('id2','user2', 'STUDENT', 'password2');
 createDefaultUsers('id3', 'user3', 'TEACHER', 'password3');
 createDefaultUsers('admin', 'admin', 'ADMIN', 'admin');
 
-
 async function createDefaultUsers(username, name, role, password) {
     let encryptedPassword = await bcrypt.hash(password, 10);
     await db.registerUser(username, name, role, encryptedPassword);
 }
+
+
 
 //Middleware 
 function authorizeToken(req, res, next) {
@@ -36,11 +37,25 @@ function authorizeToken(req, res, next) {
 
   try {
     const data = jwt.verify(token, process.env.TOKENKEY)
+    console.log(req.cookies.jwt)
     res.redirect('/granted')
   } catch {
     return res.status(403).redirect('/identify')
   }
-  console.log(req.cookies.jwt)
+}
+
+function authorizeRole(req, res, next) {
+  const token = req.cookies.jwt;
+  console.log("Role" + token)
+    if (!token) {
+      return res.status(401).redirect('/failed');
+    }
+    try {
+      const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
+
+    } catch {
+      console.log("Error")
+    }
 }
 
 //Routes
@@ -76,7 +91,7 @@ app.post('/identify', async (req, res) => {
   try {
     if (await bcrypt.compare(req.body.password, dbUser.password)) {
       //passwords match
-      let userObj = { username: req.body.username };
+      let userObj = { username: req.body.username, role: dbUser.role };
       const token = jwt.sign(userObj, process.env.TOKENKEY)
       //send to user and render startpage
       return res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
@@ -92,6 +107,11 @@ app.post('/identify', async (req, res) => {
 
 app.get('/granted', (req, res) => {
   res.render('start.ejs')
+})
+
+app.get('/admin', authorizeRole, (req, res) => {
+  console.log(req.cookies.jwt)
+  res.render('admin.ejs')
 })
 
 
@@ -116,7 +136,6 @@ app.post('/REGISTER', async (req, res) => {
     return;
   }
 })
-
 
 app.listen(process.env.PORT, () => {
   console.log("App is listening on " + process.env.PORT + "...")
