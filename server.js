@@ -37,7 +37,21 @@ app.get('/', (req, res) => {
 })
 
 app.get('/identify', (req, res) => {
-  res.render('identify.ejs')
+
+  //get token from cookie
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.render('identify.ejs')
+  }
+
+  try {
+    const data = jwt.verify(token, process.env.TOKENKEY)
+    res.render('start.ejs')
+  } catch {
+    return res.status(403).render('identify.ejs')
+  }
+  console.log(req.cookies.jwt)
 })
 
 
@@ -65,9 +79,8 @@ app.post('/identify', async (req, res) => {
       let userObj = { username: req.body.username };
       const token = jwt.sign(userObj, process.env.TOKENKEY)
       console.log(token);
-      //send to user
-      res.cookie('jwt', token, { httpOnly: true });
-      res.render('start.ejs')
+      //send to user and render startpage
+      return res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
     } else {
       //passwords does not match
       const message = `Incorrect password for user "${req.body.username}".`
