@@ -26,53 +26,55 @@ async function createDefaultUsers(username, name, role, password) {
 }
 
 
+//Middleware
 
-//Middleware 
 function authorizeToken(req, res, next) {
   const token = req.cookies.jwt;
-
   if (!token) {
     return res.redirect('/identify')
   }
-
   try {
     const data = jwt.verify(token, process.env.TOKENKEY)
-    console.log(req.cookies.jwt)
-    res.redirect('/granted')
+    next();
   } catch {
     return res.status(403).redirect('/identify')
   }
 }
 
-function authorizeRoleAdmin(req, res, next) {
-  console.log('i start')
-  const token = req.cookies.jwt;
-  if (!token) {
-      console.log('no token')
-      return res.status(401).redirect('/failed');
+
+function authorizeRole(requiredRole) {
+  return async (req, res, next) => {
+    try {
+      //get token from the cookie
+      const token = req.cookies.jwt;
+
+      //unauthorized if no token
+      if (!token) {
+        res.sendStatus(401);
+      }
+      const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
+      //get the user based on username from the cookie
+      const user = await db.getUser(decryptedToken.username);
+      if (user.role === requiredRole) {
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    } catch (error) {
+      console.log(error)
     }
-  try {
-    const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
-    console.log(decryptedToken.role)
-    if (decryptedToken.role == 'ADMIN') {
-      console.log('Im here')
-      next();
-    } else {
-      res.sendStatus(401);
-    }
-   } catch {
-    console.log("Error")
   }
 }
 
+
 //Routes
 
-app.get('/', authorizeToken, (req, res) => {
+app.get('/', (req, res) => {
   res.redirect('/identify')
 })
 
 
-app.get('/identify',(req, res) => {
+app.get('/identify', (req, res) => {
  res.render('identify.ejs')
 })
 
@@ -101,7 +103,7 @@ app.post('/identify', async (req, res) => {
       let userObj = { username: req.body.username, role: dbUser.role };
       const token = jwt.sign(userObj, process.env.TOKENKEY)
       //send to user and render startpage
-      return res.cookie("jwt", token, { httpOnly: true }).status(200).render('start.ejs');
+      return res.cookie("jwt", token, { httpOnly: true }).status(200).redirect('/granted');
     } else {
       //passwords does not match
       const message = `Incorrect password for user "${req.body.username}".`
@@ -112,13 +114,13 @@ app.post('/identify', async (req, res) => {
   }
 })
 
-app.get('/granted', (req, res) => {
+app.get('/granted', authorizeToken, (req, res) => {
   res.render('start.ejs')
 })
 
-app.get('/admin', authorizeRoleAdmin, (req, res) => {
-  console.log(req.cookies.jwt)
-  res.render('admin.ejs')
+app.get('/admin', authorizeRole('ADMIN'), async (req, res) => {
+  users = await db.getAllUsers();
+  res.render('admin.ejs', users)
 })
 
 

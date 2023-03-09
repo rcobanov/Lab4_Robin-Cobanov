@@ -1,1 +1,10 @@
-<h1>The admin page</h1>
+<h1>List of users:</h1>
+
+<% users.forEach(function(user) { %>
+<ul>
+  <h3>Username: <%= user.username %></h3>
+    <li>Name: <%= user.name %> </li>
+    <li>Role: <%= user.role %> </li>
+    <li>Password: <%= user.password %> </li>
+</ul>
+<% }); %>

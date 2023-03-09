@@ -45,8 +45,23 @@ function getUser(username) {
   });
 }
 
+function getAllUsers() {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM users", (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+}
+
+
+
 module.exports = {
   initDb: initDb,
   registerUser: registerUser,
-  getUser, getUser,
+  getUser: getUser,
+  getAllUsers: getAllUsers,
 }
