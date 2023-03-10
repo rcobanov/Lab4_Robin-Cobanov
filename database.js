@@ -10,7 +10,7 @@ const db = new sqlite3.Database('./users.db', sqlite3.OPEN_READWRITE, (err) => {
 function initDb() {
   db.serialize(function () {
     db.run("DROP TABLE IF EXISTS users;");
-    db.run("CREATE TABLE IF NOT EXISTS users(username TEXT NOT NULL PRIMARY KEY, name TEXT, role TEXT CHECK(role in('STUDENT', 'TEACHER','ADMIN')), password TEXT NOT NULL);");
+    db.run("CREATE TABLE IF NOT EXISTS users(username TEXT NOT NULL PRIMARY KEY, name TEXT, role TEXT CHECK(role in('STUDENT1', 'STUDENT2', 'TEACHER','ADMIN')), password TEXT NOT NULL);");
   })
 }
 
@@ -56,6 +56,17 @@ function getAllUsers() {
     });
   });
 }
+function getAllStudents() {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM users where role like 'STUDENT%'", (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+}
 
 
 
@@ -64,4 +75,5 @@ module.exports = {
   registerUser: registerUser,
   getUser: getUser,
   getAllUsers: getAllUsers,
+  getAllStudents: getAllStudents,
 }

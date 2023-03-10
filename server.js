@@ -15,8 +15,8 @@ app.use(cookieParser());
 db.initDb();
 
 //Create default users
-createDefaultUsers('id1','user1', 'STUDENT', 'password');
-createDefaultUsers('id2','user2', 'STUDENT', 'password2');
+createDefaultUsers('id1','user1', 'STUDENT1', 'password');
+createDefaultUsers('id2','user2', 'STUDENT2', 'password2');
 createDefaultUsers('id3', 'user3', 'TEACHER', 'password3');
 createDefaultUsers('admin', 'admin', 'ADMIN', 'admin');
 
@@ -27,7 +27,6 @@ async function createDefaultUsers(username, name, role, password) {
 
 
 //Middleware
-
 function authorizeToken(req, res, next) {
   const token = req.cookies.jwt;
   if (!token) {
@@ -36,26 +35,22 @@ function authorizeToken(req, res, next) {
   try {
     const data = jwt.verify(token, process.env.TOKENKEY)
     next();
-  } catch {
+  } catch (error) {
+    console.log(error);
     return res.status(403).redirect('/identify')
   }
 }
 
-
-function authorizeRole(requiredRole) {
+function authorizeRole(requiredRoles) {
   return async (req, res, next) => {
     try {
       //get token from the cookie
       const token = req.cookies.jwt;
-
-      //unauthorized if no token
-      if (!token) {
-        res.sendStatus(401);
-      }
+    
       const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
       //get the user based on username from the cookie
       const user = await db.getUser(decryptedToken.username);
-      if (user.role === requiredRole) {
+      if (requiredRoles.includes(user.role)) {
         next();
       } else {
         res.sendStatus(401);
@@ -102,8 +97,8 @@ app.post('/identify', async (req, res) => {
       //passwords match
       let userObj = { username: req.body.username, role: dbUser.role };
       const token = jwt.sign(userObj, process.env.TOKENKEY)
-      //send to user and render startpage
-      return res.cookie("jwt", token, { httpOnly: true }).status(200).redirect('/granted');
+      //send cookie to user and render startpage
+      res.cookie("jwt", token, { httpOnly: true }).status(200).redirect(`/users/${dbUser.username}`);
     } else {
       //passwords does not match
       const message = `Incorrect password for user "${req.body.username}".`
@@ -118,7 +113,7 @@ app.get('/granted', authorizeToken, (req, res) => {
   res.render('start.ejs')
 })
 
-app.get('/admin', authorizeRole('ADMIN'), async (req, res) => {
+app.get('/admin', authorizeToken, authorizeRole(['ADMIN']), async (req, res) => {
   users = await db.getAllUsers();
   res.render('admin.ejs', users)
 })
@@ -126,6 +121,34 @@ app.get('/admin', authorizeRole('ADMIN'), async (req, res) => {
 
 app.get('/REGISTER', (req, res) => {
   res.render('register.ejs')
+})
+
+app.get('/users/:userid', authorizeToken, async (req, res) => {
+  console.log(req.params.userid)
+  
+  const token = req.cookies.jwt;
+  const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
+  //get the user based on username from the cookie
+  const user = await db.getUser(decryptedToken.username);
+
+
+  //if the name in url is not matching the name in your cookie...
+  if (req.params.userid !== decryptedToken.username) {
+    return res.sendStatus(401);
+  }
+
+  if (user.role === 'STUDENT1') {
+    res.render('student1.ejs', {user : user})
+  } else if (user.role === 'STUDENT2') {
+    res.render('student2.ejs', {user : user})
+  } else if (user.role === 'TEACHER') {
+    students = await db.getAllStudents();
+    res.render('teacher.ejs', students)
+  } else if (user.role === 'ADMIN') {
+    users = await db.getAllUsers();
+    res.render('admin.ejs', users)
+  }
+  
 })
 
 app.post('/REGISTER', async (req, res) => {
