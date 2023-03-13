@@ -176,8 +176,6 @@ app.post('/REGISTER', async (req, res) => {
   }
 })
 
-
-
 async function getUserFromToken(req) {
   const token = req.cookies.jwt;
   const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
