@@ -4,7 +4,7 @@ Once logged in, the authorization system is role-based and has four levels of ac
 
 ## How to run
 
-1. Start by cloning this repository `git clone git@github.com:rcobanov/Lab4_Robin-Cobanov.git`
+1. Start by cloning this repository `git clone https://github.com/rcobanov/Lab4_Robin-Cobanov.git`
 2. Navigate your way to the folder you chose to clone the repository into.
 3. Run `npm install` in the terminal to install needed dependencies.
 4. To start the server, write `npm run runServer`.
