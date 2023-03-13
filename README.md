@@ -22,9 +22,9 @@ Student1 only has access to the Student1 page.
 
 Student2 only has access to the Student2 page.
 
-Teacher has access to Student1, Student2, Teacher.
+Teacher has access to Student1, Student2 and the Teacher page.
 
-Admin has access to Student1, Student2, Teacher, admin.
+Admin has access to Student1, Student2, Teacher and Admin page.
 
 ## JWT
 JWT will be sent to the user as a cookie.
