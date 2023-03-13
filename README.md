@@ -8,7 +8,7 @@ Once logged in, the authorization system is role-based and has four levels of ac
 2. Navigate your way to the foler you chose to clone the repository into.
 3. Run `npm install` in the terminal to install needed dependencies.
 4. To start the server, write `npm run runServer`.
-5. Te website can be accessed on ´localhost:5000`
+5. Te website can be accessed on `localhost:5000`
 
 
 
