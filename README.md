@@ -1,4 +1,16 @@
 # Lab4_Robin-Cobanov
+This is a webpage that authenticates a user using JSON webtoken. On successful login, the users browser will receive a cookie that holds a JWT.
+Once logged in, the authorization system is role-based and has four levels of access rights. The users and the data are stored in a sqlite database.
+
+## How to run
+
+1. Start by cloning this repository `git clone git@github.com:rcobanov/Lab4_Robin-Cobanov.git`
+2. Navigate your way to the foler you chose to clone the repository into.
+3. Run `npm install` in the terminal to install needed dependencies.
+4. To start the server, write `npm run runServer`.
+5. Te website can be accessed on ´localhost:5000`
+
+
 
 ## Login
 You can log in to the page by using any of the default users, or register a new one.
@@ -10,10 +22,9 @@ There's a set of default users that can be used.
 
 You can also select to register a new user by pressing the registration button.
 
-On sucessful login, your browser will receive a JWT.
+On sucessful login, your browser will receive a JWT and the user will be directed to /users/:id.
 
 ## When logged in
-Users will be directed to their own route, users/:id. 
 Once logged in, you will see a small navigation bar - this bar was added to make it simpler to verify the access of a user.
 ### User Access
 You will have access to different pages based on which role you have.
