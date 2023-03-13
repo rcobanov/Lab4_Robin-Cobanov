@@ -28,19 +28,11 @@ Admin has access to Student1, Student2, Teacher, admin.
 
 ## JWT
 JWT will be sent to the user as a cookie.
-The cookie can be found in your browser, below is an example with Chrome
+The cookie can be found in your browser, below is a link to a chrome instruction.
 
-1. Inspect the page
+https://developer.chrome.com/docs/devtools/storage/cookies/
 
-![Inspect the page](https://cookie-script.com/images/blog/chrome-cookies/view1.png)
 
-2. Select the applications tab.
-
-![Select the applications tab](https://cookie-script.com/images/blog/chrome-cookies/view2.png)
-
-3. The cookie is found under the storage tab, under the Cookies header
-
-![The cookie](https://cookie-script.com/images/blog/chrome-cookies/view3.png)
 
 
 
