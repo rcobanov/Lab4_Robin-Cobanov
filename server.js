@@ -33,7 +33,7 @@ function authorizeToken(req, res, next) {
     return res.redirect('/identify')
   }
   try {
-    const data = jwt.verify(token, process.env.TOKENKEY)
+    jwt.verify(token, process.env.TOKENKEY)
     next();
   } catch (error) {
     console.log(error);
@@ -44,12 +44,8 @@ function authorizeToken(req, res, next) {
 function authorizeRole(requiredRoles) {
   return async (req, res, next) => {
     try {
-      //get token from the cookie
-      const token = req.cookies.jwt;
-    
-      const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
-      //get the user based on username from the cookie
-      const user = await db.getUser(decryptedToken.username);
+      const user = await getUserFromToken(req);
+      
       if (requiredRoles.includes(user.role)) {
         next();
       } else {
@@ -63,7 +59,6 @@ function authorizeRole(requiredRoles) {
 
 
 //Routes
-
 app.get('/', (req, res) => {
   res.redirect('/identify')
 })
@@ -113,6 +108,20 @@ app.get('/granted', authorizeToken, (req, res) => {
   res.render('start.ejs')
 })
 
+app.get('/student1', authorizeToken, authorizeRole(['STUDENT1', 'TEACHER', 'ADMIN']), async (req, res) => {
+  const user = await getUserFromToken(req);
+  res.render('student1.ejs', { user: user })
+})
+app.get('/student2', authorizeToken, authorizeRole(['STUDENT2', 'TEACHER', 'ADMIN']), async (req, res) => {
+  const user = await getUserFromToken(req);
+  res.render('student2.ejs', { user: user })
+})
+
+app.get('/teacher', authorizeToken, authorizeRole(['TEACHER', 'ADMIN']), async (req, res) => {
+    students = await db.getAllStudents();
+    res.render('teacher.ejs', students)
+})
+
 app.get('/admin', authorizeToken, authorizeRole(['ADMIN']), async (req, res) => {
   users = await db.getAllUsers();
   res.render('admin.ejs', users)
@@ -124,11 +133,9 @@ app.get('/REGISTER', (req, res) => {
 })
 
 app.get('/users/:userid', authorizeToken, async (req, res) => {
-  console.log(req.params.userid)
-  
   const token = req.cookies.jwt;
   const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
-  //get the user based on username from the cookie
+  //get the user from db based on username from the cookie
   const user = await db.getUser(decryptedToken.username);
 
 
@@ -168,6 +175,15 @@ app.post('/REGISTER', async (req, res) => {
     return;
   }
 })
+
+
+
+async function getUserFromToken(req) {
+  const token = req.cookies.jwt;
+  const decryptedToken = jwt.verify(token, process.env.TOKENKEY);
+  const user = await db.getUser(decryptedToken.username);
+  return user;
+}
 
 app.listen(process.env.PORT, () => {
   console.log("App is listening on " + process.env.PORT + "...")
