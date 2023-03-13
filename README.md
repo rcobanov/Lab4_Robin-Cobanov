@@ -13,7 +13,7 @@ You can also select to register a new user by pressing the registration button.
 On sucessful login, your browser will receive a JWT.
 
 ## When logged in
-
+Users will be directed to their own route, users/:id. 
 Once logged in, you will see a small navigation bar - this bar was added to make it simpler to verify the access of a user.
 ### User Access
 You will have access to different pages based on which role you have.
